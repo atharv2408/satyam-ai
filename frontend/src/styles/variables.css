@@ -1,0 +1,52 @@
+:root {
+    /* Colors */
+    --color-black: #0a0a0a;
+    --color-charcoal: #1a1a1a;
+    --color-dark-navy: #0d1117;
+    --color-gold: #D4AF37;
+    --color-gold-light: #FFD700;
+    --color-gold-dark: #B8860B;
+    --color-saffron: #FF9933;
+    --color-ivory: #FFFFF0;
+    --color-white: #ffffff;
+    --color-gray-100: #f5f5f5;
+    --color-gray-200: #e5e5e5;
+    --color-gray-300: #d4d4d4;
+    --color-gray-400: #a3a3a3;
+    --color-gray-500: #737373;
+    --color-gray-600: #525252;
+    --color-gray-700: #404040;
+    --color-gray-800: #262626;
+    --color-gray-900: #171717;
+
+    /* Gradients */
+    --gradient-gold: linear-gradient(135deg, #B8860B 0%, #D4AF37 50%, #FFD700 100%);
+    --gradient-dark: linear-gradient(180deg, #0a0a0a 0%, #0d1117 100%);
+    --gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+
+    /* Typography */
+    --font-serif: 'Cinzel', Georgia, serif;
+    --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-hindi: 'Noto Sans Devanagari', sans-serif;
+
+    /* Shadows */
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.5);
+    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.3);
+    --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.25);
+    --shadow-gold: 0 0 30px rgba(212, 175, 55, 0.3);
+    --shadow-gold-lg: 0 0 60px rgba(212, 175, 55, 0.4);
+
+    /* Transitions */
+    --transition-fast: 150ms ease;
+    --transition-base: 300ms ease;
+    --transition-slow: 500ms ease;
+
+    /* Z-Index Scale */
+    --z-base: 1;
+    --z-dropdown: 100;
+    --z-sticky: 200;
+    --z-modal: 300;
+    --z-tooltip: 400;
+    --z-loader: 500;
+}

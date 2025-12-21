@@ -1,0 +1,31 @@
+.constitution-book {
+    perspective: 1000px;
+    transform-style: preserve-3d;
+}
+
+.book-cover {
+    background: linear-gradient(135deg, #8B4513 0%, #654321 50%, #3d2914 100%);
+    box-shadow:
+        -5px 5px 20px rgba(0, 0, 0, 0.5),
+        inset 0 0 60px rgba(0, 0, 0, 0.3);
+    transform: rotateY(-5deg);
+    transition: transform 0.5s ease;
+}
+
+.constitution-book:hover .book-cover {
+    transform: rotateY(-15deg);
+}
+
+.book-spine {
+    background: linear-gradient(90deg, #654321, #8B4513);
+    transform: rotateY(90deg);
+    transform-origin: right center;
+}
+
+.book-pages {
+    background: repeating-linear-gradient(0deg,
+            #f5f5dc,
+            #f5f5dc 2px,
+            #e8e8d4 2px,
+            #e8e8d4 4px);
+}
