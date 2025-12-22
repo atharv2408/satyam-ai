@@ -8,7 +8,9 @@ from dotenv import load_dotenv
 
 from pinecone import Pinecone
 from sentence_transformers import SentenceTransformer
-import google.generativeai as genai
+from openai import OpenAI
+import time
+import json
 
 # ============================
 #  LOAD ENV
@@ -16,17 +18,15 @@ import google.generativeai as genai
 
 load_dotenv(override=True)
 
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
 INDEX_NAME = os.getenv("PINECONE_INDEX_NAME", "legal-index")
 
-if not GEMINI_API_KEY:
-    print("ERROR: GEMINI_API_KEY not found in .env")
+if not OPENAI_API_KEY:
+    print("ERROR: OPENAI_API_KEY not found in .env")
 else:
-    genai.configure(api_key=GEMINI_API_KEY)
+    client = OpenAI(api_key=OPENAI_API_KEY)
 
-
-import json
 
 CACHE_FILE = "response_cache.json"
 
@@ -49,6 +49,8 @@ def save_cache(cache):
 # ============================
 #  EMBEDDING MODEL (MATCHES INDEX DIM = 384)
 # ============================
+# NOTE: Keeping local embeddings to match existing Pinecone index.
+# Switching to OpenAI Embeddings (1536) would require re-indexing.
 
 print("Loading embedding model (all-MiniLM-L6-v2)...")
 embedder = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
@@ -135,8 +137,7 @@ def retrieve_chunks(query: str, top_k: int = 8):
     section_number = section_match.group(1) if section_match else None
     article_number = article_match.group(1) if article_match else None
 
-    selected_laws = detect_law(query)
-
+    # selected_laws = detect_law(query) # Unused for now, but ready for logic
     filter_dict = None
 
     result = index.query(
@@ -158,7 +159,6 @@ def retrieve_chunks(query: str, top_k: int = 8):
 
         if text:
             # Inject metadata into the context so the LLM knows what it's reading
-            # This helps if the chunk text doesn't explicitly contain "Article 302" header
             page_info = f" (Page {metadata.get('page') or metadata.get('page_number') or '?'})"
             rich_context = f"[[Source: {source}{page_info}]]\n{text}"
             
@@ -171,25 +171,27 @@ def retrieve_chunks(query: str, top_k: int = 8):
     return contexts, sources
 
 
-import time
-
 # ============================
-#  HELPER: RETRY LOGIC
+#  HELPER: RETRY LOGIC (OPENAI)
 # ============================
-def call_gemini_with_retry(model, prompt, max_retries=3):
-    """Call Gemini API with exponential backoff for rate limits."""
+def call_openai_with_retry(messages, model="gpt-3.5-turbo", max_retries=3):
+    """Call OpenAI API with exponential backoff."""
     for attempt in range(max_retries):
         try:
-            return model.generate_content(prompt)
+            response = client.chat.completions.create(
+                model=model,
+                messages=messages,
+                temperature=0.3
+            )
+            return response.choices[0].message.content
         except Exception as e:
-            if "429" in str(e) or "Quota exceeded" in str(e):
-                # Increased base wait time: 2, 4, 8, 16, 32 seconds
+            if "RateLimitError" in str(e) or "429" in str(e):
                 wait_time = (2 ** (attempt + 1)) + random.uniform(0, 1)
-                print(f"⚠️ Quota exceeded. Retrying in {wait_time:.1f}s... (Attempt {attempt+1}/{max_retries})")
+                print(f"⚠️ OpenAI Quota exceeded. Retrying in {wait_time:.1f}s... (Attempt {attempt+1}/{max_retries})")
                 time.sleep(wait_time)
             else:
                 raise e
-    raise Exception("Max retries exceeded for Gemini API")
+    raise Exception("Max retries exceeded for OpenAI API")
 
 # ============================
 #  QUERY CONTEXTUALIZATION
@@ -198,20 +200,16 @@ def call_gemini_with_retry(model, prompt, max_retries=3):
 def rewrite_query(query: str, chat_history: list):
     """
     Uses the LLM to rewrite the latest query based on chat history.
-    Example: "What is the punishment?" -> "What is the punishment for Section 302 IPC?"
     """
     if not chat_history:
         return query
 
     try:
-        model = genai.GenerativeModel('gemini-flash-latest')
-        
         # Format history for the prompt
         history_text = "\n".join(chat_history[-4:]) # Use last 4 turns for context
         
-        prompt = f"""
-        ACT AS A CONTEXTUAL QUERY REWRITER.
-        
+        system_msg = "ACT AS A CONTEXTUAL QUERY REWRITER."
+        user_msg = f"""
         CHAT HISTORY:
         {history_text}
         
@@ -225,10 +223,12 @@ def rewrite_query(query: str, chat_history: list):
         - Return ONLY the rewritten query text. Do not add quotes or headers.
         """
         
-        response = call_gemini_with_retry(model, prompt, max_retries=1)
-        rewritten = response.text.strip()
+        rewritten = call_openai_with_retry(
+            messages=[{"role": "system", "content": system_msg}, {"role": "user", "content": user_msg}]
+        )
+        
         print(f" [Context Metadata] Original: '{query}' -> Rewritten: '{rewritten}'")
-        return rewritten
+        return rewritten.strip()
 
     except Exception as e:
         print(f"Error rewriting query: {e}")
@@ -241,8 +241,6 @@ def rewrite_query(query: str, chat_history: list):
 
 def generate_answer(query: str, contexts, sources, chat_history: list = None):
     try:
-        model = genai.GenerativeModel('gemini-flash-latest')
-
         # GREETING CHECK
         query_lower = query.lower().strip().rstrip("!.,?")
         greetings = {"hi", "hello", "hey", "greetings", "namaste", "hola", "who are you", "who are you?", "what is your name"}
@@ -254,12 +252,18 @@ def generate_answer(query: str, contexts, sources, chat_history: list = None):
                  "confidence": 100
              }
 
+        if "who created you" in query_lower or "who made you" in query_lower:
+             return {
+                 "answer": "I was created by Atharv Munj.",
+                 "sources": [],
+                 "confidence": 100
+             }
+
         # CACHE CHECK
         cache = load_cache()
         cache_key = query.lower().strip()
-        if cache_key in cache:
-            print(f" [CACHE HIT] Returning cached response for '{cache_key}'")
-            return cache[cache_key]
+        # if cache_key in cache:
+        #     return cache[cache_key]
 
         # Format history
         history_text = ""
@@ -270,9 +274,8 @@ def generate_answer(query: str, contexts, sources, chat_history: list = None):
         if contexts:
             context_block = "\n\n".join(contexts[:3])
             
-            prompt = f"""
-{SYSTEM_PROMPT}
-
+            system_msg = SYSTEM_PROMPT.strip()
+            user_msg = f"""
 {history_text}LEGAL DATABASE CONTEXT:
 {context_block}
 
@@ -283,14 +286,14 @@ INSTRUCTIONS:
 - Answer ONLY using the above legal context.
 - Do NOT use external knowledge.
 - Do NOT invent sections, punishments, or cases.
-- If the retrieved context does NOT contain the specific text or details to answer the question (e.g., the text of the requested Article is missing), Reply EXACTLY: "INSUFFICIENT_CONTEXT".
+- If the retrieved context does NOT contain the specific text or details to answer the question, Reply EXACTLY: "INSUFFICIENT_CONTEXT".
 - Cite the specific sources you strictly used from the context.
 - End your response with a SINGLE line: "SOURCES_USED: <comma_separated_list_of_sources>"
 - KEEP THE ANSWER CONCISE (maximum 3-4 lines).
-                # KEEP THE ANSWER CONCISE (maximum 3-4 lines).
 """
-            response = call_gemini_with_retry(model, prompt)
-            full_answer = response.text.strip()
+            full_answer = call_openai_with_retry(
+                messages=[{"role": "system", "content": system_msg}, {"role": "user", "content": user_msg}]
+            )
 
             if "INSUFFICIENT_CONTEXT" in full_answer:
                  contexts = [] # Trigger fallback
@@ -309,6 +312,11 @@ INSTRUCTIONS:
                     # Fallback if AI forgets marker: use all retrieved
                     used_sources = list(set(sources))
 
+                # Append sources to the text answer to ensure visibility
+                if used_sources:
+                    source_list_text = "\n".join([f"- {s}" for s in used_sources])
+                    final_answer += f"\n\n**Sources:**\n{source_list_text}"
+
                 confidence = random.randint(88, 98)
 
                 result = {
@@ -324,35 +332,41 @@ INSTRUCTIONS:
 
         #  AI FALLBACK MODE
         if not contexts:
-            fallback_prompt = f"""
-{SYSTEM_PROMPT}
-
+            system_msg = SYSTEM_PROMPT.strip()
+            user_msg = f"""
 The legal database does not contain information to answer this question.
 
 QUESTION:
 {query}
 
 TASK:
-Provide a GENERAL LEGAL EXPLANATION based on commonly known Indian law.
-Do NOT:
-- Mention exact section numbers unless clearly certain
-- Invent case names
-- Claim this is from a verified source
-
-Use simple educational language.
-- Keep the explanation concise (3-4 lines).
-- Keep the explanation concise (3-4 lines).
+1.  **RELEVANCE CHECK**: Is this question related to Indian Law, Acts, Constitution, Rights, Crime, Police, Courts, or Justice?
+2.  **IF NOT RELATED** (e.g. Cricket, Bollywood, Food, Coding, General Science):
+    - Reply EXACTLY: "I apologize, but I am a specialized Legal AI. I can only assist with questions related to Indian Law and Justice."
+3.  **IF RELATED**:
+    - Provide a GENERAL LEGAL EXPLANATION based on commonly known Indian law.
+    - Do NOT mention exact section numbers unless clearly certain.
+    - Keep it educational and concise (3-4 lines).
 """
+            fallback_text = call_openai_with_retry(
+                 messages=[{"role": "system", "content": system_msg}, {"role": "user", "content": user_msg}]
+            )
+            
+            # If refusal, return low confidence and clean message
+            if "I can only assist with questions related to Indian Law" in fallback_text:
+                return {
+                    "answer": fallback_text,
+                    "sources": [],
+                    "confidence": 100 # High confidence in its refusal
+                }
 
-        response = call_gemini_with_retry(model, fallback_prompt)
-        fallback_text = response.text.strip()
-        confidence = random.randint(55, 70)
+            confidence = random.randint(55, 70)
 
-        return {
-            "answer": f" AI-GENERATED GENERAL LEGAL INFORMATION (NOT FROM DATABASE):\n\n{fallback_text}\n\nConfidence Score: {confidence}% (AI-Generated Educational Answer )",
-            "sources": [],
-            "confidence": confidence
-        }
+            return {
+                "answer": f"{fallback_text}\n\n> **Note:** This information is generated by AI based on general legal knowledge as the specific section was not found in the verified database.",
+                "sources": [],
+                "confidence": confidence
+            }
     except Exception as e:
         return {
             "answer": f"I apologize, but I encountered an error connecting to the AI service: {str(e)}",
@@ -366,7 +380,7 @@ Use simple educational language.
 # ============================
 
 def chat():
-    print("\n Legal RAG Chatbot Ready (Auto Law Detection + Fallback + Confidence Enabled)\n")
+    print("\n Legal RAG Chatbot Ready (OpenAI Powered + Fallback + Confidence Enabled)\n")
 
     while True:
         query = input(" You: ").strip()

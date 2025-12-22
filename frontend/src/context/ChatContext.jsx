@@ -7,11 +7,10 @@ const initialState = {
         {
             id: 'welcome',
             type: 'ai',
-            content: `Namaste! 🙏 I am SATYAM AI, your legal assistant powered by Indian constitutional values.
+            content: `Namaste! 🙏 I am SATYAM AI, your legal assistant.
 
 I can help you with:
 • Understanding Indian laws and rights
-• Constitutional provisions
 • Legal procedures and processes
 • Case law references
 

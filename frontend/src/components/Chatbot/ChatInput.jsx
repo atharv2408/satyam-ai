@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react'
-import { Send, Paperclip, Mic, Square } from 'lucide-react'
+import { Send, Mic, Square } from 'lucide-react'
 import Button from '@components/UI/Button'
 
 const ChatInput = ({ onSend, isLoading, onStop, value, onChange }) => {
@@ -44,14 +44,7 @@ const ChatInput = ({ onSend, isLoading, onStop, value, onChange }) => {
             `}>
 
                 {/* Attachment Button */}
-                <button
-                    type="button"
-                    className="p-3 text-gray-400 hover:text-white hover:bg-white/10 rounded-xl transition-colors shrink-0"
-                    title="Attach file (disabled in demo)"
-                    disabled={isLoading}
-                >
-                    <Paperclip size={20} />
-                </button>
+                {/* Attachment Button Removed */}
 
                 {/* Text Area */}
                 <textarea

@@ -5,13 +5,16 @@ import App from './App'
 import { ChatProvider } from '@context/ChatContext'
 import { AuthProvider } from '@context/AuthContext'
 import '@styles/index.css'
+import ErrorBoundary from './components/ErrorBoundary'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
     <React.StrictMode>
         <BrowserRouter>
             <AuthProvider>
                 <ChatProvider>
-                    <App />
+                    <ErrorBoundary>
+                        <App />
+                    </ErrorBoundary>
                 </ChatProvider>
             </AuthProvider>
         </BrowserRouter>

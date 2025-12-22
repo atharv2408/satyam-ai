@@ -3,6 +3,7 @@ import { Routes, Route, useLocation } from 'react-router-dom'
 import { AnimatePresence } from 'framer-motion'
 import Loader from '@components/Layout/Loader'
 import ProtectedRoute from '@components/Layout/ProtectedRoute'
+import GlobalBackground from '@components/Layout/GlobalBackground'
 import LandingPage from './pages/LandingPage'
 import ChatPage from './pages/ChatPage'
 import LoginPage from './pages/LoginPage'
@@ -22,7 +23,8 @@ function App() {
     }, [])
 
     return (
-        <div className="app bg-black min-h-screen">
+        <div className="app min-h-screen">
+            <GlobalBackground />
             <AnimatePresence mode="wait">
                 {isLoading && <Loader key="loader" />}
             </AnimatePresence>

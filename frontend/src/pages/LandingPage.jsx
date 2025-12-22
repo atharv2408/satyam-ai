@@ -12,17 +12,13 @@ import Features from '@components/Features/Features'
 import About from '@components/About/About'
 
 
-// Fixed Background Components
-import Emblem3D from '@components/Hero/Emblem3D'
-import Particles from '@components/Hero/Particles'
-import FloatingText from '@components/Hero/FloatingText'
-
 // UI Components
 import FloatingChatButton from '@components/UI/FloatingChatButton'
 
 const LandingPage = () => {
     const navigate = useNavigate()
     const { isAuthenticated } = useAuth()
+    const [isFooterVisible, setIsFooterVisible] = React.useState(false)
 
     const handleStartChat = () => {
         if (!isAuthenticated) {
@@ -32,16 +28,33 @@ const LandingPage = () => {
         }
     }
 
+    React.useEffect(() => {
+        const handleScroll = () => {
+            const footer = document.getElementById('contact')
+            if (footer) {
+                const rect = footer.getBoundingClientRect()
+                const windowHeight = window.innerHeight
+                // Check if footer is visible in the viewport
+                if (rect.top <= windowHeight) {
+                    setIsFooterVisible(true)
+                } else {
+                    setIsFooterVisible(false)
+                }
+            }
+        }
+
+        window.addEventListener('scroll', handleScroll)
+        return () => window.removeEventListener('scroll', handleScroll)
+    }, [])
+
     return (
-        <div className="landing-page bg-black relative min-h-screen">
+        <div className="landing-page relative min-h-screen">
             <Navbar onChatClick={handleStartChat} />
 
-            {/* Fixed Background Layer (Emblem + Particles) */}
-            <div className="fixed inset-0 z-0 pointer-events-none">
-                <Emblem3D />
-                <Particles />
-                <FloatingText />
-            </div>
+
+
+            {/* Legacy Background Removed - Using GlobalBackground.jsx */}
+
 
             {/* Vertical Scroll Layout */}
             <main className="relative z-10 flex flex-col">

@@ -5,6 +5,8 @@ import ChatInput from './ChatInput'
 import SuggestionChips from './SuggestionChips'
 import useChatActions from '@hooks/useChat'
 
+import ChatBackground3D from './ChatBackground3D'
+
 const Chatbot = ({ onVisibilityChange }) => {
     const {
         messages,
@@ -40,60 +42,58 @@ const Chatbot = ({ onVisibilityChange }) => {
     const showSuggestions = messages.length <= 1
 
     return (
-        <div className="flex flex-col h-full w-full max-w-5xl mx-auto relative bg-gradient-to-b from-black to-charcoal/20 overflow-hidden">
-            {/* Background Logo Watermark */}
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0 opacity-20">
-                <img
-                    src="/logo.webp"
-                    alt="Satyam AI Logo"
-                    className="w-96 h-96 object-contain grayscale-0 drop-shadow-[0_0_15px_rgba(234,179,8,0.3)]"
-                />
-            </div>
+        <div className="relative w-full h-full bg-gradient-to-b from-black to-charcoal/20 overflow-hidden">
+            {/* Full Screen 3D Background */}
+            <ChatBackground3D />
 
-            {/* Messages Area */}
-            <div className="flex-1 overflow-y-auto px-4 py-6 md:px-8 space-y-6 thin-scrollbar scroll-smooth relative z-10">
-                {/* Spacer for Top Content */}
-                <div className="h-4" />
+            {/* Content Container - Centered and Constrained */}
+            <div className="flex flex-col h-full w-full max-w-5xl mx-auto relative z-10 pointer-events-none">
+                {/* Pointer events enabled only for interactive elements */}
 
-                <AnimatePresence initial={false}>
-                    {messages.map((msg) => (
-                        <ChatMessage key={msg.id} message={msg} />
-                    ))}
-                </AnimatePresence>
+                {/* Messages Area */}
+                <div className="flex-1 overflow-y-auto px-4 py-6 md:px-8 space-y-6 thin-scrollbar scroll-smooth pointer-events-auto">
+                    {/* Spacer for Top Content */}
+                    <div className="h-4" />
 
+                    <AnimatePresence initial={false}>
+                        {messages.map((msg) => (
+                            <ChatMessage key={msg.id} message={msg} />
+                        ))}
+                    </AnimatePresence>
 
-
-                {/* Error Message */}
-                {error && (
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        className="p-4 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-center text-sm"
-                    >
-                        {error}
-                    </motion.div>
-                )}
-
-                <div ref={messagesEndRef} className="h-4" />
-            </div>
-
-            {/* Input Area */}
-            <div className="p-4 md:p-6 bg-black/80 backdrop-blur-lg border-t border-gold-500/10 mb-4 z-20">
-                <div className="max-w-3xl mx-auto space-y-4">
-                    {showSuggestions && (
-                        <div className="mb-2">
-                            {/* Update: Suggestion clicks now populate input instead of sending */}
-                            <SuggestionChips onSuggestionClick={(text) => setInputValue(text)} />
-                        </div>
+                    {/* Error Message */}
+                    {error && (
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            className="p-4 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-center text-sm"
+                        >
+                            {error}
+                        </motion.div>
                     )}
 
-                    <ChatInput
-                        onSend={handleSend}
-                        isLoading={isLoading}
-                        onStop={stopGeneration}
-                        value={inputValue}
-                        onChange={setInputValue}
-                    />
+                    <div ref={messagesEndRef} className="h-4" />
+                </div>
+
+                {/* Input Area */}
+                <div className="p-4 md:p-6 mb-4 pointer-events-auto">
+                    <div className="bg-black/80 backdrop-blur-lg border border-gold-500/10 rounded-2xl p-2 shadow-2xl">
+                        <div className="space-y-4 p-2">
+                            {showSuggestions && (
+                                <div className="mb-2">
+                                    <SuggestionChips onSuggestionClick={(text) => setInputValue(text)} />
+                                </div>
+                            )}
+
+                            <ChatInput
+                                onSend={handleSend}
+                                isLoading={isLoading}
+                                onStop={stopGeneration}
+                                value={inputValue}
+                                onChange={setInputValue}
+                            />
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

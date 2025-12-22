@@ -55,9 +55,15 @@ const Footer = () => {
 
                 {/* Bottom Footer */}
                 <div className="flex flex-col md:flex-row justify-between items-center pt-8 gap-4">
-                    <p className="text-sm text-gray-600">
-                        © {new Date().getFullYear()} {APP_CONFIG.NAME}. All rights reserved. Made with ❤️ in India.
-                    </p>
+                    <div className="flex flex-col md:flex-row items-center gap-4">
+                        <p className="text-sm text-gray-600">
+                            © {new Date().getFullYear()} {APP_CONFIG.NAME}. All rights reserved.
+                        </p>
+                        <span className="hidden md:block text-gray-700">•</span>
+                        <p className="text-sm text-gray-500 font-medium tracking-wide">
+                            Created by <span className="text-gold-500/80 hover:text-gold-500 transition-colors cursor-default">Atharv Munj</span>
+                        </p>
+                    </div>
 
                     {/* Social Links */}
                     <div className="flex gap-4">

@@ -22,6 +22,13 @@ export const NAV_LINKS = [
 // Features Data
 export const FEATURES = [
     {
+        id: 'explainable',
+        icon: 'HelpCircle',
+        title: 'Explainable AI Reasoning',
+        description: 'Every response comes with clear citations, legal references, and step-by-step reasoning you can verify and trust.',
+        highlights: ['Citation References', 'Logical Breakdown', 'Precedent Linking'],
+    },
+    {
         id: 'constitution',
         icon: 'Shield',
         title: 'Indian Law & Constitution',
@@ -36,11 +43,11 @@ export const FEATURES = [
         highlights: ['Supreme Court Database', 'High Court Judgments', 'Official Gazette Records'],
     },
     {
-        id: 'explainable',
-        icon: 'HelpCircle',
-        title: 'Explainable AI Reasoning',
-        description: 'Every response comes with clear citations, legal references, and step-by-step reasoning you can verify and trust.',
-        highlights: ['Citation References', 'Logical Breakdown', 'Precedent Linking'],
+        id: 'users',
+        icon: 'Users',
+        title: 'Built for Everyone',
+        description: 'Designed for citizens, law students, legal professionals, and anyone seeking to understand their rights.',
+        highlights: ['Simple Language Mode', 'Professional Mode'],
     },
     {
         id: 'privacy',
@@ -49,21 +56,8 @@ export const FEATURES = [
         description: 'Your legal queries are encrypted and never stored. Complete confidentiality with enterprise-grade security.',
         highlights: ['End-to-End Encryption', 'No Data Retention', 'GDPR Compliant'],
     },
-    {
-        id: 'users',
-        icon: 'Users',
-        title: 'Built for Everyone',
-        description: 'Designed for citizens, law students, legal professionals, and anyone seeking to understand their rights.',
-        highlights: ['Simple Language Mode', 'Professional Mode', 'Multi-language Support'],
-    },
-    {
-        id: 'realtime',
-        icon: 'Clock',
-        title: 'Real-time Updates',
-        description: 'Stay current with the latest amendments, new judgments, and evolving legal interpretations.',
-        highlights: ['Live Legal Updates', 'Amendment Alerts', 'New Judgment Feed'],
-    },
 ]
+
 
 
 

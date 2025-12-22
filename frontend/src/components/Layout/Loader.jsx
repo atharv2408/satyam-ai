@@ -49,22 +49,7 @@ const Loader = () => {
                 </motion.p>
             </div>
 
-            <style jsx>{`
-        @keyframes spin-slow {
-          100% { transform: rotate(360deg); }
-        }
-        .animate-spin-slow {
-          animation: spin-slow 2s linear infinite;
-        }
-        @keyframes loader-dash {
-          0% { stroke-dashoffset: 283; }
-          50% { stroke-dashoffset: 75; }
-          100% { stroke-dashoffset: 283; }
-        }
-        .animate-loader-dash {
-          animation: loader-dash 1.5s ease-in-out infinite;
-        }
-      `}</style>
+
         </motion.div>
     )
 }

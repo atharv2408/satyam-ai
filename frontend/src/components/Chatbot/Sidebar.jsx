@@ -16,10 +16,12 @@ import { useAuth } from '@context/AuthContext'
 import useChatActions from '@hooks/useChat'
 import { createChatSession } from '@services/api'
 import { Link } from 'react-router-dom'
+import SettingsModal from './SettingsModal'
 
 const Sidebar = ({ isOpen, onToggle, onNewChat }) => {
     const { user, logout, isAuthenticated } = useAuth()
-    const { loadSession, startNewConversation, sessions, refreshSessions, deleteSession } = useChatActions()
+    const { loadSession, startNewConversation, sessions, refreshSessions, deleteSession, messages } = useChatActions()
+    const [isSettingsOpen, setIsSettingsOpen] = useState(false)
 
     useEffect(() => {
         if (isAuthenticated) {
@@ -128,7 +130,10 @@ const Sidebar = ({ isOpen, onToggle, onNewChat }) => {
                 <div className="p-4 border-t border-gold-500/10 bg-black/50">
                     {isAuthenticated ? (
                         <div className="space-y-2">
-                            <button className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-white/5 transition-colors text-left mb-1">
+                            <button
+                                onClick={() => setIsSettingsOpen(true)}
+                                className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-white/5 transition-colors text-left mb-1"
+                            >
                                 <div className="w-8 h-8 rounded-full bg-gradient-to-br from-gold-400 to-gold-600 flex items-center justify-center text-black font-bold text-xs">
                                     {user?.name?.[0]?.toUpperCase() || 'U'}
                                 </div>
@@ -154,6 +159,13 @@ const Sidebar = ({ isOpen, onToggle, onNewChat }) => {
                     )}
                 </div>
             </motion.aside>
+
+            <SettingsModal
+                isOpen={isSettingsOpen}
+                onClose={() => setIsSettingsOpen(false)}
+                messages={messages}
+                onClear={startNewConversation}
+            />
         </>
     )
 }

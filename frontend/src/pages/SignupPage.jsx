@@ -4,6 +4,7 @@ import { motion } from 'framer-motion'
 import { ArrowLeft, User, Mail, Lock, AlertCircle } from 'lucide-react'
 import Button from '@components/UI/Button'
 import { useAuth } from '@context/AuthContext'
+import AuthBackground3D from '@components/Layout/AuthBackground3D'
 
 const SignupPage = () => {
     const navigate = useNavigate()
@@ -42,12 +43,9 @@ const SignupPage = () => {
     }
 
     return (
-        <div className="min-h-screen bg-black flex flex-col relative overflow-hidden">
+        <div className="min-h-screen flex flex-col relative overflow-hidden">
             {/* Background Effects */}
-            <div className="absolute inset-0 z-0">
-                <div className="absolute top-[20%] right-[-10%] w-[50%] h-[50%] bg-gold-500/5 rounded-full blur-[100px]" />
-                <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-gold-500/5 rounded-full blur-[100px]" />
-            </div>
+            <AuthBackground3D />
 
             {/* Header */}
             <header className="absolute top-0 left-0 p-6 z-20">
