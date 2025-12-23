@@ -1,0 +1,56 @@
+RIGHT TO INFORMATION ACT, 2005 - FILING GUIDE
+
+1. WHAT IS RTI?
+The Right to Information (RTI) Act, 2005, allows any citizen of India to request information from a "public authority" (a body of Government or "instrumentality of State"). It promotes transparency and accountability in the working of every public authority.
+
+2. HOW TO FILE RTI ONLINE
+The Central Government and many State Governments have online portals. The central portal is https://rtionline.gov.in.
+
+Steps:
+1. Visit https://rtionline.gov.in and click on "Submit Request".
+2. Read the guidelines and tick "I have read and understood the above guidelines", then click Submit.
+3. Fill in the form:
+   - Select the Ministry/Department (e.g., Ministry of Home Affairs).
+   - Enter your personal details (Name, Address, Email, Mobile).
+   - Select "BPL" status (Yes/No). If Yes, upload proof.
+4. Enter the Text for RTI Request application (up to 3000 characters). 
+   - Be specific. Ask for data/documents. Do not ask "Why" questions or for opinions.
+5. Upload supporting documents if needed (PDF up to 1MB).
+6. Pay the fee (₹10) via Internet Banking, Credit/Debit Card, or UPI.
+7. Submit. You will get a Registration Number by SMS/Email. Save this for tracking.
+
+3. HOW TO FILE RTI OFFLINE
+You can file an RTI application on plain paper.
+
+Steps:
+1. Identify the Public Information Officer (PIO) of the concerned department.
+2. Write the application on a plain sheet of paper (English, Hindi, or local official language).
+3. Subject: "Application under Right to Information Act, 2005".
+4. Content:
+   - "To, The Public Information Officer, [Name of Department], [Address]".
+   - "Sir/Madam, Please provide the following information: [List your specific questions 1, 2, 3...]".
+   - "I am affixing the fee of ₹10 via [Mode of Payment]".
+   - Your Name, Address, Contact Number, and Signature.
+5. Pay the fee of ₹10 via:
+   - Cash (get a receipt).
+   - Demand Draft / Banker’s Cheque / Indian Postal Order (IPO) payable to the "Accounts Officer" of the public authority.
+   - Court Fee Stamp (in some states).
+6. Send via Speed Post or Registered Post AD (Acknowledgment Due) so you have proof of delivery.
+
+4. FEES AND EXEMPTIONS
+- Application Fee: ₹10 (Standard).
+- BPL (Below Poverty Line): Exempt from all fees (must provide BPL certificate).
+- Information Cost:
+  - ₹2 per page (A4/A3).
+  - Actual cost for samples/models.
+  - No fee if information is not provided within 30 days.
+
+5. TIME LIMITS
+- Standard Reply: 30 days from receipt of application.
+- Life & Liberty: 48 hours (if information concerns life or liberty of a person).
+- Third Party Information: 40 days.
+- Transfer case: 30 days + transfer time.
+
+6. APPEALS
+- First Appeal: If no reply or unsatisfied with reply, file "First Appeal" to the First Appellate Authority (FAA) within 30 days of the deadline/response. (No fee for Central Govt appeals).
+- Second Appeal: If unsatisfied with FAA decision, file "Second Appeal" to the Central Information Commission (CIC) or State Information Commission (SIC) within 90 days.

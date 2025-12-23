@@ -1,9 +1,18 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { Send, Mic, Square } from 'lucide-react'
 import Button from '@components/UI/Button'
+import useVoiceInput from '@hooks/useVoiceInput'
 
 const ChatInput = ({ onSend, isLoading, onStop, value, onChange }) => {
     const textareaRef = useRef(null)
+    const {
+        isListening,
+        transcript,
+        startListening,
+        stopListening,
+        resetTranscript,
+        isSupported
+    } = useVoiceInput()
 
     // Auto-resize textarea
     useEffect(() => {
@@ -13,11 +22,20 @@ const ChatInput = ({ onSend, isLoading, onStop, value, onChange }) => {
         }
     }, [value])
 
+    // Sync voice transcript with input value
+    useEffect(() => {
+        if (isListening && transcript) {
+            onChange(transcript)
+        }
+    }, [transcript, isListening, onChange])
+
     const handleSubmit = (e) => {
         e.preventDefault()
         if (value.trim() && !isLoading) {
             onSend(value)
             onChange('') // Clear parent state
+            resetTranscript() // Clear voice transcript
+            if (isListening) stopListening() // Stop recording
             // Reset height
             if (textareaRef.current) textareaRef.current.style.height = 'auto'
         }
@@ -35,12 +53,21 @@ const ChatInput = ({ onSend, isLoading, onStop, value, onChange }) => {
         }
     }
 
+    const toggleVoiceInput = () => {
+        if (isListening) {
+            stopListening()
+        } else {
+            startListening()
+        }
+    }
+
     return (
         <form onSubmit={handleSubmit} className="relative w-full">
             <div className={`
                 relative flex items-end gap-2 bg-white/5 border border-gold-500/20 rounded-2xl p-2 
                 transition-all duration-300 shadow-lg shadow-black/50
                 ${isLoading ? 'opacity-80' : 'focus-within:bg-black/80 focus-within:border-gold-500/50'}
+                ${isListening ? 'border-red-500/50 bg-red-500/5' : ''}
             `}>
 
                 {/* Attachment Button */}
@@ -52,7 +79,13 @@ const ChatInput = ({ onSend, isLoading, onStop, value, onChange }) => {
                     value={value}
                     onChange={(e) => onChange(e.target.value)}
                     onKeyDown={handleKeyDown}
-                    placeholder={isLoading ? "Satyam AI is thinking..." : "Ask about your legal rights..."}
+                    placeholder={
+                        isListening
+                            ? "Listening..."
+                            : isLoading
+                                ? "Satyam AI is thinking..."
+                                : "Ask about your legal rights..."
+                    }
                     disabled={isLoading}
                     className={`
                         flex-1 bg-transparent text-white placeholder-gray-500 text-[15px] resize-none focus:outline-none py-3 max-h-[150px] min-h-[44px]
@@ -61,13 +94,21 @@ const ChatInput = ({ onSend, isLoading, onStop, value, onChange }) => {
                     rows={1}
                 />
 
-                {/* Voice Button (Visual only) */}
-                {!value && !isLoading && (
+                {/* Voice Button */}
+                {!isLoading && isSupported && (
                     <button
                         type="button"
-                        className="p-3 text-gray-400 hover:text-white hover:bg-white/10 rounded-xl transition-colors shrink-0"
+                        onClick={toggleVoiceInput}
+                        className={`
+                            p-3 rounded-xl transition-all duration-300 shrink-0
+                            ${isListening
+                                ? 'bg-red-500 text-white animate-pulse'
+                                : 'text-gray-400 hover:text-white hover:bg-white/10'
+                            }
+                        `}
+                        title={isListening ? "Stop Recording" : "Start Voice Input"}
                     >
-                        <Mic size={20} />
+                        <Mic size={20} className={isListening ? "animate-bounce" : ""} />
                     </button>
                 )}
 
