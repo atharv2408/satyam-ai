@@ -60,7 +60,7 @@ const AuthBackground3D = () => {
                 gl={{ alpha: true, antialias: true }}
             >
                 <ambientLight intensity={0.5} />
-                <pointLight position={[10, 10, 10]} intensity={1} color="#GOLD" />
+                <pointLight position={[10, 10, 10]} intensity={1} color="#FFD700" />
 
                 {/* Visuals */}
                 <RotatingGeometry />
