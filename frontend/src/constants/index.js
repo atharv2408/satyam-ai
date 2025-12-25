@@ -1,6 +1,6 @@
 // API Configuration
 export const API_CONFIG = {
-    BASE_URL: '/api',
+    BASE_URL: import.meta.env.VITE_API_URL || 'http://localhost:8000',
     CHAT_ENDPOINT: '/rag',
     TIMEOUT: parseInt(import.meta.env.VITE_API_TIMEOUT) || 120000,
 }

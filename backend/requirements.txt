@@ -1,0 +1,13 @@
+fastapi
+uvicorn
+python-dotenv
+openai
+pinecone>=3.0.0
+sentence-transformers
+sqlmodel
+python-jose[cryptography]
+bcrypt
+psycopg2-binary
+pyjwt
+requests
+python-multipart
