@@ -3,7 +3,7 @@
 Satyam AI is an advanced legal assistant application that leverages Artificial Intelligence to provide accurate legal information and guidance. It uses Retrieval-Augmented Generation (RAG) to fetch relevant legal sections from a knowledge base (like the Indian Penal Code) and provide cited, context-aware answers.
 
 !Satyam AI
-![alt text](image.png)
+<img width="1917" height="917" alt="image" src="https://github.com/user-attachments/assets/bfa54452-9142-425c-b67b-c3eb65e12682" />
 
 ## 🌟 Features
 
