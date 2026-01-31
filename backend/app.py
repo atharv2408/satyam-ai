@@ -2,7 +2,7 @@ from fastapi import FastAPI, Depends, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from sqlmodel import Session, select
-from typing import Optional
+from typing import Optional, List
 
 from rag_chain import retrieve_chunks, generate_answer, rewrite_query
 from database import create_db_and_tables, get_session
