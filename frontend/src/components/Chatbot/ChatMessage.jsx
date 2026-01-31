@@ -83,13 +83,13 @@ const ChatMessage = ({ message }) => {
                 </div>
 
                 {/* References (Citations) */}
-                {isAi && message.references && message.references.length > 0 && (
+                {isAi && message.references && (Array.isArray(message.references) ? message.references : []).length > 0 && (
                     <div className="mt-6 pl-2 border-l-2 border-gold-500/30">
                         <p className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-2 flex items-center gap-1">
                             <Info size={12} /> Sources Verified
                         </p>
                         <div className="flex flex-wrap gap-2">
-                            {message.references.map((ref, idx) => (
+                            {(Array.isArray(message.references) ? message.references : []).map((ref, idx) => (
                                 <a
                                     key={idx}
                                     href={ref.url || '#'}

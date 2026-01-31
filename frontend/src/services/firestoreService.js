@@ -98,6 +98,10 @@ export const getSessionMessages = async (sessionId, userId) => {
         const messages = querySnapshot.docs.map(doc => ({
             id: doc.id,
             ...doc.data(),
+            // Parse references if stored as string
+            references: typeof doc.data().references === 'string'
+                ? JSON.parse(doc.data().references)
+                : (doc.data().references || []),
             // Convert Firestore timestamp to ISO string for frontend
             timestamp: doc.data().createdAt?.toDate().toISOString() || new Date().toISOString()
         }))
