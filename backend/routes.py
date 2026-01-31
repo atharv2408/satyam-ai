@@ -1,66 +1,21 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Body
-from fastapi.security import OAuth2PasswordRequestForm
 from sqlmodel import Session, select
 from typing import List
 
 from database import get_session
 from models import User, ChatSession, ChatMessage
-from auth import get_password_hash, verify_password, create_access_token, get_current_user
+from auth import get_current_user
 from pydantic import BaseModel
 
 router = APIRouter()
 
-# Schema for Signup
-class UserSignup(BaseModel):
-    name: str
-    email: str
-    password: str
+# Auth Routes - DEPRECATED/REMOVED
+# Authentication is now handled by Firebase on the client side.
+# The backend verifies the Firebase ID token via the `get_current_user` dependency.
 
-# Schema for Token
-class Token(BaseModel):
-    access_token: str
-    token_type: str
-    user_name: str
-    user_email: str
-
-# Auth Routes
-@router.post("/auth/signup", response_model=Token)
-async def signup(user_data: UserSignup, session: Session = Depends(get_session)):
-    # Check if user exists
-    statement = select(User).where(User.email == user_data.email)
-    existing_user = session.exec(statement).first()
-    if existing_user:
-        raise HTTPException(status_code=400, detail="Email already registered")
-    
-    # Create new user
-    new_user = User(
-        email=user_data.email,
-        name=user_data.name,
-        password_hash=get_password_hash(user_data.password)
-    )
-    session.add(new_user)
-    session.commit()
-    session.refresh(new_user)
-    
-    # Generate token
-    access_token = create_access_token(data={"sub": new_user.email})
-    return {"access_token": access_token, "token_type": "bearer", "user_name": new_user.name, "user_email": new_user.email}
-
-@router.post("/auth/login", response_model=Token)
-async def login(form_data: OAuth2PasswordRequestForm = Depends(), session: Session = Depends(get_session)):
-    # OAuth2PasswordRequestForm expects 'username', but we use it as email
-    statement = select(User).where(User.email == form_data.username)
-    user = session.exec(statement).first()
-    
-    if not user or not verify_password(form_data.password, user.password_hash):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect email or password",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    
-    access_token = create_access_token(data={"sub": user.email})
-    return {"access_token": access_token, "token_type": "bearer", "user_name": user.name, "user_email": user.email}
+# If you need to expose an endpoint to explicitly sync user data or handle
+# specific server-side post-signup logic, you can add it here.
+# For now, user synchronization happens automatically in `get_current_user`.
 
 # Chat History Routes
 

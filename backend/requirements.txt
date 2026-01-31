@@ -10,4 +10,5 @@ bcrypt
 psycopg2-binary
 pyjwt
 requests
+firebase-admin
 python-multipart

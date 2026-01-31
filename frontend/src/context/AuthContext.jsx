@@ -1,5 +1,12 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
-import { login as apiLogin, signup as apiSignup } from '@services/api'
+import {
+    createUserWithEmailAndPassword,
+    signInWithEmailAndPassword,
+    signOut,
+    onAuthStateChanged,
+    updateProfile
+} from 'firebase/auth'
+import { auth } from '../firebase'
 import apiClient from '@services/api'
 
 const AuthContext = createContext()
@@ -11,50 +18,68 @@ export const AuthProvider = ({ children }) => {
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {
-        // Check for stored token
-        const token = localStorage.getItem('token')
-        const savedUser = localStorage.getItem('user')
-        if (token && savedUser) {
-            setUser(JSON.parse(savedUser))
-            // Set default header
-            apiClient.defaults.headers.common['Authorization'] = `Bearer ${token}`
-        }
-        setLoading(false)
+        const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+            setUser(currentUser)
+
+            if (currentUser) {
+                // Get ID token and set header
+                const token = await currentUser.getIdToken()
+                apiClient.defaults.headers.common['Authorization'] = `Bearer ${token}`
+
+                // Store minimal info if needed for other parts of app that read localStorage
+                // though it's better to rely on context
+                localStorage.setItem('token', token)
+                localStorage.setItem('user', JSON.stringify({
+                    name: currentUser.displayName,
+                    email: currentUser.email
+                }))
+            } else {
+                delete apiClient.defaults.headers.common['Authorization']
+                localStorage.removeItem('token')
+                localStorage.removeItem('user')
+            }
+
+            setLoading(false)
+        })
+
+        return () => unsubscribe()
     }, [])
 
     const login = async (email, password) => {
         try {
-            const data = await apiLogin(email, password)
-            localStorage.setItem('token', data.access_token)
-            localStorage.setItem('user', JSON.stringify({ name: data.user_name, email: data.user_email }))
-            setUser({ name: data.user_name, email: data.user_email })
-            apiClient.defaults.headers.common['Authorization'] = `Bearer ${data.access_token}`
+            await signInWithEmailAndPassword(auth, email, password)
             return { success: true }
         } catch (error) {
-            const errorMessage = error.response?.data?.detail || error.message || 'Login failed'
+            console.error("Login Error:", error)
+            const errorMessage = error.message || 'Login failed'
+            // Map common firebase errors to user friendly messages if needed
             return { success: false, error: errorMessage }
         }
     }
 
     const signup = async (name, email, password) => {
         try {
-            const data = await apiSignup(name, email, password)
-            localStorage.setItem('token', data.access_token)
-            localStorage.setItem('user', JSON.stringify({ name: data.user_name, email: data.user_email }))
-            setUser({ name: data.user_name, email: data.user_email })
-            apiClient.defaults.headers.common['Authorization'] = `Bearer ${data.access_token}`
+            const userCredential = await createUserWithEmailAndPassword(auth, email, password)
+
+            // Update profile with name
+            await updateProfile(userCredential.user, {
+                displayName: name
+            })
+
             return { success: true }
         } catch (error) {
-            const errorMessage = error.response?.data?.detail || error.message || 'Signup failed'
+            console.error("Signup Error:", error)
+            const errorMessage = error.message || 'Signup failed'
             return { success: false, error: errorMessage }
         }
     }
 
-    const logout = () => {
-        localStorage.removeItem('token')
-        localStorage.removeItem('user')
-        setUser(null)
-        delete apiClient.defaults.headers.common['Authorization']
+    const logout = async () => {
+        try {
+            await signOut(auth)
+        } catch (error) {
+            console.error("Logout Error:", error)
+        }
     }
 
     const value = {

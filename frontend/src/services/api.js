@@ -59,30 +59,7 @@ apiClient.interceptors.response.use(
     }
 )
 
-// ============================================
-// AUTH API SERVICES
-// ============================================
-
-export const login = async (username, password) => {
-    // Defines form data for OAuth2
-    const formData = new FormData()
-    formData.append('username', username)
-    formData.append('password', password)
-
-    const response = await apiClient.post('/auth/login', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-    })
-    return response.data
-}
-
-export const signup = async (name, email, password) => {
-    const response = await apiClient.post('/auth/signup', {
-        name,
-        email,
-        password
-    })
-    return response.data
-}
+// Auth API services removed - handled by Firebase directly
 
 // ============================================
 // CHAT API SERVICES
@@ -95,10 +72,14 @@ export const signup = async (name, email, password) => {
  * @param {object} options - Additional options (language, mode, etc.)
  * @returns {Promise<object>} - The AI response
  */
-export const sendChatMessage = async (message, sessionId = null, options = {}) => {
+// Update signature to include history
+export const sendChatMessage = async (message, sessionId = null, options = {}, history = []) => {
     try {
-        // Backend expects { "query": "text", "session_id": 123 }
-        const payload = { query: message }
+        // Backend expects { "query": "text", "session_id": 123, "history": [...] }
+        const payload = {
+            query: message,
+            history: history // Pass history to backend
+        }
         if (sessionId) {
             payload.session_id = sessionId
         }

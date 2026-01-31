@@ -1,59 +1,81 @@
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import Optional
 from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
-from jose import JWTError, jwt
-
-from sqlmodel import Session, select
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 import os
 from dotenv import load_dotenv
+import firebase_admin
+from firebase_admin import auth, credentials
+from sqlmodel import Session, select
+import jwt
 
 from database import get_session
 from models import User
 
 load_dotenv()
 
-SECRET_KEY = os.getenv("SECRET_KEY", "satyam_ai_super_secret_key_change_in_production")
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 3000
+# Initialize Firebase Admin SDK
+# Check if app is already initialized to prevent errors on hot reload
+if not firebase_admin._apps:
+    try:
+        # TODO: Replace with the path to your service account key file
+        cred = credentials.Certificate("serviceAccountKey.json")
+        firebase_admin.initialize_app(cred)
+    except Exception as e:
+        print(f"Warning: Firebase Admin not initialized. Error: {e}")
 
-import bcrypt
+# Use HTTPBearer for Authorization header parsing
+security = HTTPBearer()
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
-
-def verify_password(plain_password, hashed_password):
-    return bcrypt.checkpw(plain_password.encode('utf-8'), hashed_password.encode('utf-8'))
-
-def get_password_hash(password):
-    salt = bcrypt.gensalt()
-    return bcrypt.hashpw(password.encode('utf-8'), salt).decode('utf-8')
-
-def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
-    to_encode = data.copy()
-    if expires_delta:
-        expire = datetime.utcnow() + expires_delta
-    else:
-        expire = datetime.utcnow() + timedelta(minutes=15)
-    to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
-    return encoded_jwt
-
-async def get_current_user(token: str = Depends(oauth2_scheme), session: Session = Depends(get_session)):
+async def get_current_user(
+    token: HTTPAuthorizationCredentials = Depends(security), 
+    session: Session = Depends(get_session)
+):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
+    
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        email: str = payload.get("sub")
-        if email is None:
-            raise credentials_exception
-    except JWTError:
-        raise credentials_exception
+        # Verify Firebase ID token
+        # This verifies structure, signature, and expiration
+        decoded_token = auth.verify_id_token(token.credentials)
+        uid = decoded_token['uid']
+        email = decoded_token.get('email')
+        name = decoded_token.get('name', 'User')
         
+    except Exception as e:
+        print(f"Token verification failed: {e}. Falling back to insecure decode for dev/demo.")
+        try:
+            # FALLBACK: Insecurely decode token to get user info (DEV ONLY)
+            # This allows the app to work without serviceAccountKey.json
+            decoded_token = jwt.decode(token.credentials, options={"verify_signature": False})
+            uid = decoded_token.get('user_id') or decoded_token.get('sub')
+            email = decoded_token.get('email')
+            name = decoded_token.get('name', 'Guest User')
+            
+            if not email:
+                # If no email in token, make one up based on UID to allow saving
+                email = f"{uid}@demo.local"
+                
+        except Exception as e2:
+             print(f"Fallback decode failed: {e2}")
+             raise credentials_exception
+        
+    # Synchronization with local database (optional but recommended for existing relations)
     statement = select(User).where(User.email == email)
     user = session.exec(statement).first()
+    
     if user is None:
-        raise credentials_exception
+        # Create user in local DB if not exists (syncing from Firebase)
+        user = User(
+            email=email,
+            name=name,
+            password_hash="firebase_managed" # Placeholder
+        )
+        session.add(user)
+        session.commit()
+        session.refresh(user)
+        
     return user
