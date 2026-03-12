@@ -282,7 +282,7 @@ export function useChatActions() {
         if (!id) return
 
         // Optimistic update
-        setSessions(prev => prev.filter(s => s.id !== id))
+        setSessions(sessions.filter(s => s.id !== id))
 
         // If deleting current session, clear it
         if (sessionId === id) {
@@ -296,7 +296,7 @@ export function useChatActions() {
             refreshSessions()
             setError('Failed to delete chat')
         }
-    }, [sessionId, setSessions, setSession, clearMessages, refreshSessions, setError])
+    }, [sessionId, sessions, setSessions, setSession, clearMessages, refreshSessions, setError])
 
 
 

@@ -10,11 +10,12 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
       '@components': path.resolve(__dirname, './src/components'),
       '@hooks': path.resolve(__dirname, './src/hooks'),
-      '@services': path.resolve(__dirname, './src/services'),
-      '@styles': path.resolve(__dirname, './src/styles'),
       '@utils': path.resolve(__dirname, './src/utils'),
-      '@constants': path.resolve(__dirname, './src/constants'),
+      '@pages': path.resolve(__dirname, './src/pages'),
       '@context': path.resolve(__dirname, './src/context'),
+      '@services': path.resolve(__dirname, './src/services'),
+      '@constants': path.resolve(__dirname, './src/constants'),
+      '@styles': path.resolve(__dirname, './src/styles')
     },
   },
   server: {
@@ -27,4 +28,17 @@ export default defineConfig({
       },
     },
   },
+  build: {
+    sourcemap: true,
+    chunkSizeWarningLimit: 1000,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom', 'react-router-dom'],
+          three: ['three', '@react-three/fiber', '@react-three/drei'],
+          animation: ['framer-motion', 'gsap'],
+        }
+      }
+    }
+  }
 })
