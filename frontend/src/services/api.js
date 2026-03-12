@@ -161,74 +161,19 @@ export const streamChatMessage = async (message, onChunk, sessionId = null, sign
 }
 
 /**
- * Get chat history for a session
- * @param {string} sessionId - The session ID
- * @returns {Promise<object>} - Chat history
+ * Get all chat sessions for user (DEPRECATED - Moved to Firestore)
  */
-export const getSessionMessages = async (sessionId) => {
-    try {
-        const response = await apiClient.get(`/chat/session/${sessionId}`)
-        return {
-            success: true,
-            data: response.data,
-        }
-    } catch (error) {
-        return {
-            success: false,
-            error: error.response?.data?.detail || 'Failed to fetch chat messages',
-        }
-    }
-}
+// export const getUserSessions = async () => { ... }
 
 /**
- * Get all chat sessions for user
+ * Create a new chat session (DEPRECATED - Moved to Firestore)
  */
-export const getUserSessions = async () => {
-    try {
-        const response = await apiClient.get('/chat/history')
-        return {
-            success: true,
-            data: response.data
-        }
-    } catch (error) {
-        return { success: false, error: error.message }
-    }
-}
+// export const createChatSession = async (title = "New Chat") => { ... }
 
 /**
- * Create a new chat session
- * @returns {Promise<object>} - New session details
+ * Delete a chat session (DEPRECATED - Moved to Firestore)
  */
-export const createChatSession = async (title = "New Chat") => {
-    try {
-        const response = await apiClient.post('/chat/session', { title })
-        return {
-            success: true,
-            data: response.data,
-        }
-    } catch (error) {
-        return {
-            success: false,
-            error: error.response?.data?.detail || 'Failed to create session',
-        }
-    }
-}
-
-/**
- * Delete a chat session
- * @param {string} sessionId 
- */
-export const deleteChatSession = async (sessionId) => {
-    try {
-        await apiClient.delete(`/chat/session/${sessionId}`)
-        return { success: true }
-    } catch (error) {
-        return {
-            success: false,
-            error: error.response?.data?.detail || 'Failed to delete session'
-        }
-    }
-}
+// export const deleteChatSession = async (sessionId) => { ... }
 
 
 

@@ -14,7 +14,7 @@ import {
 import Button from '@components/UI/Button'
 import { useAuth } from '@context/AuthContext'
 import useChatActions from '@hooks/useChat'
-import { createChatSession } from '@services/api'
+import * as firestoreService from '@services/firestoreService'
 import { Link } from 'react-router-dom'
 import SettingsModal from './SettingsModal'
 
@@ -30,11 +30,11 @@ const Sidebar = ({ isOpen, onToggle, onNewChat }) => {
     }, [isAuthenticated, refreshSessions])
 
     const handleNewChatClick = async () => {
-        if (isAuthenticated) {
-            const result = await createChatSession()
+        if (isAuthenticated && user) {
+            const result = await firestoreService.createNewSession(user.uid)
             if (result.success) {
                 await refreshSessions()
-                loadSession(result.data.id)
+                loadSession(result.id)
                 if (window.innerWidth < 768) onToggle()
             }
         } else {
